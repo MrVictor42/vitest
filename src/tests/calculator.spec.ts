@@ -11,21 +11,18 @@ import { calculator } from "./calculator";
 const skipTest = false;
 
 describe("Vitest Fundamentals", () => {
-    it.skipIf(skipTest)("should add two numbers", () => {
+    it.skipIf(skipTest)("Deve somar dois numeros", () => {
         const result = calculator.add(2, 3);
 
         expect(result).toBe(5);
     });
 
-    it("should add two numbers V2", () => {
+    it("Mostra como o spipes funciona", () => {
+        const spy = vi.spyOn(calculator, "add");
         const result = calculator.add(2, 3);
 
         expect(result).toBe(5);
-    });
-
-    it("should add two numbers V3", () => {
-        const result = calculator.add(2, 3);
-
-        expect(result).toBe(5);
+        expect(spy).toHaveBeenCalledOnce(); //confirma que o metodo foi chamado uma vez
+        expect(spy).toHaveBeenCalledWith(2, 3); //confirma que o metodo foi chamado com os argumentos originais e na ordem colocada
     });
 });
