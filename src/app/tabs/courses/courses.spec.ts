@@ -6,6 +6,8 @@ import { HttpTestingController, provideHttpClientTesting } from "@angular/common
 import { provideHttpClient } from "@angular/common/http";
 import { Courses } from "./courses";
 import { CoursesService } from "../../services/courses.service";
+import { MOCK_COURSES } from "../../testing/testing-data";
+import { By } from "@angular/platform-browser";
 
 describe("Courses", () => {
     let component: Courses;
@@ -31,11 +33,39 @@ describe("Courses", () => {
         fixture.detectChanges();
     });
 
-    it("Deve carregar cursos e filtrar pela categoria", () => {
-        httpMock.expectOne("/api/courses");
+    it("Deve carregar cursos e filtrar pela categoria", async () => {
+        const req = httpMock.expectOne("/api/courses");
+
+        req.flush({ payload: MOCK_COURSES });
+        await fixture.whenStable();
+        fixture.detectChanges();
+
+        const titles = debug.queryAll(By.css(".course-card .card-header"));
+        const titleElement = titles[0].nativeElement;
+
+        expect(titles).toHaveLength(1);
+        expect(titleElement.textContent).toBe("Beginner Course");   
     });
 
-    it("Deve mostrar cursos avançados quando tab clicada", () => {
+    it("Deve mostrar cursos avançados quando tab clicada", async () => {
+        const req = httpMock.expectOne("/api/courses");
 
+        req.flush({ payload: MOCK_COURSES });
+        await fixture.whenStable();
+
+        const btn = debug.query(By.css(".tab-link:last-child"));
+
+        btn.nativeElement.click();
+        fixture.detectChanges();
+
+        const titles = debug.queryAll(By.css(".course-card .card-header"));
+        const titleElement = titles[0].nativeElement;
+
+        expect(titles).toHaveLength(1);
+        expect(titleElement.textContent).toBe("Advanced Course");   
+    });
+
+    afterEach(() => {
+        httpMock.verify();
     });
 });
