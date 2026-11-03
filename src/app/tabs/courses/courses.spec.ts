@@ -1,3 +1,4 @@
+import { TabsHarness } from './../tabs/tabs.harness';
 import { describe, beforeEach } from "vitest";
 import { ComponentFixture, TestBed } from "@angular/core/testing";
 import { provideRouter } from "@angular/router";
@@ -8,12 +9,14 @@ import { Courses } from "./courses";
 import { CoursesService } from "../../services/courses.service";
 import { MOCK_COURSES } from "../../testing/testing-data";
 import { By } from "@angular/platform-browser";
+import { TestbedHarnessEnvironment } from '@angular/cdk/testing/testbed';
 
 describe("Courses", () => {
     let component: Courses;
     let fixture: ComponentFixture<Courses>;
     let debug: DebugElement;
     let httpMock: HttpTestingController;
+    let tabs: TabsHarness
 
     beforeEach(async () => {
         await TestBed.configureTestingModule({
@@ -30,6 +33,10 @@ describe("Courses", () => {
         component = fixture.componentInstance;
         debug = fixture.debugElement;
         httpMock = TestBed.inject(HttpTestingController);
+
+        const loader = TestbedHarnessEnvironment.loader(fixture);
+
+        tabs = await loader.getHarness(TabsHarness);
         fixture.detectChanges();
     });
 
@@ -45,6 +52,9 @@ describe("Courses", () => {
 
         expect(titles).toHaveLength(1);
         expect(titleElement.textContent).toBe("Beginner Course");   
+
+        expect(await tabs.getTabLabels()).toEqual(["Beginner", "Advanced"]);
+        expect(await tabs.getActiveLabel()).toBe("Beginner");
     });
 
     it("Deve mostrar cursos avançados quando tab clicada", async () => {
@@ -53,10 +63,7 @@ describe("Courses", () => {
         req.flush({ payload: MOCK_COURSES });
         await fixture.whenStable();
 
-        const btn = debug.query(By.css(".tab-link:last-child"));
-
-        btn.nativeElement.click();
-        fixture.detectChanges();
+        await tabs.clickTabByIndex(1);
 
         const titles = debug.queryAll(By.css(".course-card .card-header"));
         const titleElement = titles[0].nativeElement;
